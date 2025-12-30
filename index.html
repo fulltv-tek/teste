@@ -1,0 +1,1958 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Alô Lilinha</title>
+  <style>
+    :root{
+      --ui:#0f172a;
+      --ui2:#111827;
+      --txt:#e5e7eb;
+      --txt2:#94a3b8;
+      --accent:#f59e0b;
+      --good:#22c55e;
+      --bad:#ef4444;
+      --shadow: rgba(0,0,0,.35);
+    }
+    html,body{height:100%;margin:0;background:#070a12;color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;}
+    #wrap{display:flex;align-items:center;justify-content:center;height:100%;padding:10px;box-sizing:border-box;}
+    #game{
+      width:min(980px,100%);
+      aspect-ratio: 16/9;
+      background:#05070f;
+      border-radius:16px;
+      box-shadow: 0 10px 50px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06) inset;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      touch-action:none;
+    }
+    #overlay{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+      background: radial-gradient(1200px 800px at 50% 40%, rgba(245,158,11,.08), transparent 60%),
+                  radial-gradient(1000px 700px at 70% 60%, rgba(99,102,241,.08), transparent 65%),
+                  rgba(0,0,0,.65);
+      padding:18px;box-sizing:border-box;
+    }
+    .card{
+      width:min(780px,100%);
+      background: linear-gradient(180deg, rgba(17,24,39,.92), rgba(2,6,23,.92));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      box-shadow: 0 18px 80px rgba(0,0,0,.55);
+      padding:18px 18px 16px;
+      backdrop-filter: blur(10px);
+    }
+    .toprow{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
+    .title{
+      font-weight:900;letter-spacing:.5px;margin:0;
+      font-size: clamp(26px, 3.2vw, 40px);
+      text-shadow: 0 2px 0 rgba(0,0,0,.35);
+    }
+    .subtitle{
+      margin:6px 0 0;color:var(--txt2);line-height:1.35;
+      font-size: clamp(13px, 1.6vw, 15px);
+      max-width: 52ch;
+    }
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: var(--txt);
+      font-weight:700;font-size:12px;
+      user-select:none;
+    }
+    .badge b{color:var(--accent);}
+    .grid{display:grid;grid-template-columns: 1.2fr .8fr;gap:14px;margin-top:14px;}
+    @media (max-width: 720px){
+      .grid{grid-template-columns:1fr;gap:12px;}
+    }
+    .panel{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(2,6,23,.45);
+      border-radius:14px;
+      padding:12px;
+    }
+    .panel h3{margin:0 0 8px;font-size:14px;letter-spacing:.4px;color:#cbd5e1}
+    .panel p{margin:0;color:var(--txt2);font-size:13px;line-height:1.4}
+    .controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+    button{
+      cursor:pointer;border:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(245,158,11,.95), rgba(217,119,6,.95));
+      color:#111827;font-weight:900;
+      padding:11px 12px;border-radius:12px;
+      box-shadow: 0 10px 24px rgba(245,158,11,.15);
+      letter-spacing:.3px;
+    }
+    button.secondary{
+      background: linear-gradient(180deg, rgba(30,41,59,.92), rgba(17,24,39,.92));
+      color: var(--txt);
+      box-shadow:none;
+    }
+    button:active{transform: translateY(1px);}
+    .tiny{font-size:12px;color:var(--txt2);margin-top:10px;line-height:1.35}
+    .hr{height:1px;background:rgba(255,255,255,.07);margin:12px 0;}
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+    .kbd{
+      font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      display:inline-flex;align-items:center;justify-content:center;
+      min-width: 22px;
+      padding:2px 7px;border-radius:8px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      color:#e2e8f0;
+      font-weight:800;
+    }
+    /* Mobile buttons */
+    #touchUI{
+      position:fixed;left:0;right:0;bottom:0;
+      display:none;gap:12px;justify-content:space-between;
+      padding: max(10px, env(safe-area-inset-bottom)) 12px 12px;
+      pointer-events:none;
+    }
+    .touchGroup{display:flex;gap:10px;pointer-events:none;}
+    .touchBtn{
+      width:64px;height:64px;border-radius:16px;
+      background: rgba(2,6,23,.55);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      display:flex;align-items:center;justify-content:center;
+      color:#e5e7eb;font-weight:900;
+      pointer-events:auto;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action:none;
+    }
+    .touchBtn:active{transform: translateY(1px);}
+    .touchBtn small{font-size:11px;color:#cbd5e1;opacity:.9}
+    .touchBtn .big{font-size:20px;line-height:1}
+    .touchBtn.wide{width:86px}
+    .hint{
+      position:fixed;top:10px;left:50%;transform:translateX(-50%);
+      background: rgba(2,6,23,.55);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:999px;padding:7px 10px;
+      color:#cbd5e1;font-weight:800;font-size:12px;
+      display:none;
+      backdrop-filter: blur(10px);
+      pointer-events:none;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="game" width="960" height="540"></canvas>
+  </div>
+
+  <div id="overlay">
+    <div class="card" id="menuCard">
+      <div class="toprow">
+        <div>
+          <h1 class="title">Alô Lilinha</h1>
+          <p class="subtitle">
+            Lili, a cachorra caramelo mais esperta do bairro, está fugindo da prisão
+            pra voltar pra casa. Pegue a chave, fuja do portão e não deixe os guardas
+            aumentarem o alerta — porque quando o alarme toca, a bagunça começa.
+          </p>
+        </div>
+        <div class="badge" id="saveBadge">Progresso: <b>Novo</b></div>
+      </div>
+
+      <div class="grid">
+        <div class="panel">
+          <h3>Como jogar</h3>
+          <p>
+            <span class="kbd">A</span>/<span class="kbd">D</span> ou <span class="kbd">←</span>/<span class="kbd">→</span> andar ·
+            <span class="kbd">W</span>/<span class="kbd">↑</span>/<span class="kbd">Espaço</span> pular ·
+            <span class="kbd">Shift</span> correr ·
+            <span class="kbd">E</span> interagir ·
+            <span class="kbd">P</span> pausar
+          </p>
+          <div class="hr"></div>
+          <p>
+            Itens: <b style="color:#eab308">Chave</b> abre portões ·
+            <b style="color:#a3e635">Ossos</b> pontuação ·
+            <b style="color:#fb7185">Petiscos</b> recuperam vida.
+          </p>
+        </div>
+        <div class="panel">
+          <h3>Objetivo</h3>
+          <p id="menuObjective">
+            Fase 1: Encontre a chave da cela, abra o portão e alcance a saída.
+          </p>
+          <div class="controls">
+            <button id="btnPlay">Jogar</button>
+            <button id="btnContinue" class="secondary">Continuar</button>
+            <button id="btnReset" class="secondary">Reiniciar</button>
+          </div>
+          <div class="tiny">
+            Dica: se um guarda te enxergar no cone de visão, o <b>ALERTA</b> sobe e podem aparecer perseguições.
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <div class="tiny">Feito em Canvas 2D. Pixel art gerada por código. Sem imagens externas.</div>
+        <div class="tiny" id="buildInfo"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint"></div>
+
+  <div id="touchUI">
+    <div class="touchGroup">
+      <div class="touchBtn" id="tLeft"><div class="big">◀</div><small>esq</small></div>
+      <div class="touchBtn" id="tRight"><div class="big">▶</div><small>dir</small></div>
+    </div>
+    <div class="touchGroup">
+      <div class="touchBtn wide" id="tInteract"><div class="big">E</div><small>usar</small></div>
+      <div class="touchBtn" id="tJump"><div class="big">⤒</div><small>pulo</small></div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  /******************************************************************
+   * ENGINE (loop, input, physics, render helpers)
+   ******************************************************************/
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d", { alpha: false });
+
+  // Dynamic scaling for crisp pixel look
+  const BASE_W = 960, BASE_H = 540;
+  function fitCanvas(){
+    // keep internal resolution fixed; css scales
+    canvas.width = BASE_W;
+    canvas.height = BASE_H;
+  }
+  fitCanvas();
+
+  const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+  const Keys = new Set();
+  const Pressed = new Set(); // for one-frame press detection
+  const gamepad = { left:false, right:false, jump:false, interact:false, run:false };
+
+  const overlay = document.getElementById("overlay");
+  const saveBadge = document.getElementById("saveBadge");
+  const btnPlay = document.getElementById("btnPlay");
+  const btnContinue = document.getElementById("btnContinue");
+  const btnReset = document.getElementById("btnReset");
+  const menuObjective = document.getElementById("menuObjective");
+  const buildInfo = document.getElementById("buildInfo");
+  const hintEl = document.getElementById("hint");
+  const touchUI = document.getElementById("touchUI");
+
+  buildInfo.textContent = "v1.0 • " + new Date().toLocaleDateString("pt-BR");
+
+  const isTouch = () => (navigator.maxTouchPoints || 0) > 0 || "ontouchstart" in window;
+
+  function showHint(text, ms=1400){
+    hintEl.textContent = text;
+    hintEl.style.display = "block";
+    clearTimeout(showHint._t);
+    showHint._t = setTimeout(()=> hintEl.style.display = "none", ms);
+  }
+
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+
+  const audio = (() => {
+    let ctxA = null;
+    function beep(freq=440, dur=0.06, type="square", vol=0.05){
+      try{
+        if(!ctxA) ctxA = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctxA.createOscillator();
+        const g = ctxA.createGain();
+        o.type = type;
+        o.frequency.value = freq;
+        g.gain.value = vol;
+        o.connect(g); g.connect(ctxA.destination);
+        o.start();
+        o.stop(ctxA.currentTime + dur);
+      }catch(e){}
+    }
+    return { beep };
+  })();
+
+  window.addEventListener("keydown", (e) => {
+    const k = e.key.toLowerCase();
+    Keys.add(k);
+    if(!e.repeat) Pressed.add(k);
+    // prevent page scroll on arrows/space
+    if(["arrowleft","arrowright","arrowup"," ","space"].includes(e.key.toLowerCase()) || ["ArrowLeft","ArrowRight","ArrowUp"," "].includes(e.key)){
+      e.preventDefault();
+    }
+  }, { passive:false });
+
+  window.addEventListener("keyup", (e) => {
+    Keys.delete(e.key.toLowerCase());
+  });
+
+  function down(k){ return Keys.has(k); }
+  function pressed(k){ return Pressed.has(k); }
+
+  function clearPressed(){ Pressed.clear(); }
+
+  // Touch controls
+  function bindTouchBtn(el, on){
+    let active = false;
+    const set = (v) => { active = v; on(v); };
+    const start = (e)=>{ e.preventDefault(); set(true); };
+    const end = (e)=>{ e.preventDefault(); set(false); };
+    el.addEventListener("pointerdown", start);
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointercancel", end);
+    el.addEventListener("pointerleave", end);
+    return () => active;
+  }
+
+  if(isTouch()){
+    touchUI.style.display = "flex";
+    bindTouchBtn(document.getElementById("tLeft"), v => gamepad.left = v);
+    bindTouchBtn(document.getElementById("tRight"), v => gamepad.right = v);
+    bindTouchBtn(document.getElementById("tJump"), v => gamepad.jump = v);
+    bindTouchBtn(document.getElementById("tInteract"), v => gamepad.interact = v);
+    showHint("Controles touch ativados");
+  }
+
+  // Render helpers
+  function pixRect(x,y,w,h,color){
+    ctx.fillStyle = color;
+    ctx.fillRect(x|0, y|0, w|0, h|0);
+  }
+  function pixText(text, x, y, size=12, color="#e5e7eb", align="left"){
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.font = `${size}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+    ctx.textAlign = align;
+    ctx.textBaseline = "top";
+    ctx.fillText(text, x|0, y|0);
+    ctx.restore();
+  }
+  function vignette(){
+    const g = ctx.createRadialGradient(BASE_W/2, BASE_H/2, 50, BASE_W/2, BASE_H/2, Math.max(BASE_W,BASE_H)*0.7);
+    g.addColorStop(0, "rgba(0,0,0,0)");
+    g.addColorStop(1, "rgba(0,0,0,0.45)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,BASE_W,BASE_H);
+  }
+
+  /******************************************************************
+   * GAME (levels, entities, logic)
+   ******************************************************************/
+
+  const TILE = 24; // terraria-ish chunky pixel
+  const GRAV = 1600;   // px/s^2
+  const MAX_FALL = 1200;
+
+  // Tile ids
+  const T = {
+    EMPTY: 0,
+    DIRT:  1,
+    STONE: 2,
+    BRICK: 3, // prison brick
+    METAL: 4, // industrial
+    GRASS: 5,
+    ROAD:  6,
+    PIPE:  7,
+    HOUSE: 8,
+    DOOR:  9, // locked gate/door tile
+    SPIKE: 10, // trap
+    LASER: 11  // hazard line (as tile)
+  };
+
+  // Level blueprint generator (short but distinct)
+  function makeLevel1(){
+    // Prison escape
+    const w = 120, h = 22;
+    const tiles = new Array(w*h).fill(T.EMPTY);
+
+    const set = (x,y,v)=> { if(x>=0&&y>=0&&x<w&&y<h) tiles[y*w+x]=v; };
+    const get = (x,y)=> (x<0||y<0||x>=w||y>=h) ? T.STONE : tiles[y*w+x];
+
+    // Floor + underground
+    for(let x=0;x<w;x++){
+      for(let y=h-4;y<h;y++){
+        set(x,y, y===h-4 ? T.BRICK : T.STONE);
+      }
+    }
+    // Prison structure
+    for(let x=0;x<40;x++){
+      for(let y=0;y<h-4;y++){
+        if(y===0 || y===h-5 || x===0 || x===39) set(x,y,T.BRICK);
+      }
+    }
+    // Inner platforms
+    for(let x=6;x<34;x++){ set(x,12,T.BRICK); }
+    for(let x=12;x<28;x++){ set(x,8,T.BRICK); }
+
+    // Cell area with a door (locked gate)
+    for(let y=14;y<h-5;y++){
+      set(5,y,T.BRICK);
+      set(9,y,T.BRICK);
+    }
+    for(let x=5;x<=9;x++) set(x,14,T.BRICK);
+    set(7,15,T.DOOR); // cell gate tile
+
+    // Corridor to exit with some hazards
+    for(let x=40;x<w;x++){
+      set(x,h-4,T.METAL);
+      if(x%7===0 && x>48 && x<78) set(x,h-5,T.SPIKE);
+    }
+    // A raised platform section
+    for(let x=62;x<78;x++) set(x,h-8,T.METAL);
+    for(let x=78;x<92;x++) set(x,h-6,T.METAL);
+
+    // Exit gate
+    set(94,h-5,T.DOOR);
+    set(94,h-6,T.DOOR);
+
+    // Some decorative top bricks
+    for(let x=44;x<54;x++) set(x,4,T.BRICK);
+    for(let x=52;x<60;x++) set(x,7,T.BRICK);
+
+    return {
+      id: 1,
+      name: "Prisão",
+      w,h,tiles,
+      spawn: { x: 7*TILE, y: 13*TILE },
+      checkpoint: { x: 55*TILE, y: (h-7)*TILE },
+      exit: { x: 112*TILE, y: (h-8)*TILE, w: 3*TILE, h: 5*TILE },
+      objectives: [
+        "Encontre a chave da cela!",
+        "Abra o portão da prisão!",
+        "Corra até a saída!"
+      ],
+      // entities will be populated later
+      get, set,
+      theme: "prison"
+    };
+  }
+
+  function makeLevel2(){
+    // Sewers / streets
+    const w=130,h=22;
+    const tiles = new Array(w*h).fill(T.EMPTY);
+    const set=(x,y,v)=>{ if(x>=0&&y>=0&&x<w&&y<h) tiles[y*w+x]=v; };
+    const get=(x,y)=> (x<0||y<0||x>=w||y>=h) ? T.STONE : tiles[y*w+x];
+
+    // Ground
+    for(let x=0;x<w;x++){
+      for(let y=h-4;y<h;y++){
+        set(x,y, y===h-4 ? (x<50?T.ROAD:T.PIPE) : T.STONE);
+      }
+    }
+    // A sewer trench with pipes and gaps
+    for(let x=34;x<86;x++){
+      set(x,h-5,T.PIPE);
+      if(x%11===0) set(x,h-4,T.EMPTY); // holes
+    }
+    // Platforms
+    for(let x=10;x<26;x++) set(x,12,T.METAL);
+    for(let x=22;x<34;x++) set(x,9,T.METAL);
+    for(let x=58;x<74;x++) set(x,11,T.METAL);
+    for(let x=78;x<98;x++) set(x,8,T.METAL);
+    for(let x=96;x<112;x++) set(x,12,T.METAL);
+
+    // Lasers as traps in a corridor
+    for(let x=44;x<56;x++){
+      set(x,14,T.METAL);
+      if(x>=46 && x<=54) set(x,13,T.LASER);
+    }
+
+    // Walls left/right edges for flavor
+    for(let y=0;y<h-4;y++){
+      set(0,y,T.STONE);
+      set(w-1,y,T.STONE);
+    }
+
+    return {
+      id: 2,
+      name: "Ruas & Esgoto",
+      w,h,tiles,
+      spawn: { x: 4*TILE, y: 10*TILE },
+      checkpoint: { x: 68*TILE, y: 9*TILE },
+      exit: { x: 124*TILE, y: (h-9)*TILE, w: 4*TILE, h: 6*TILE },
+      objectives: [
+        "Atravesse o esgoto sem virar petisco de serra!",
+        "Cuidado com lasers — eles não têm senso de humor.",
+        "Siga em frente: o cheirinho de casa está perto!"
+      ],
+      get,set,
+      theme: "sewer"
+    };
+  }
+
+  function makeLevel3(){
+    // Neighborhood / way home
+    const w=140,h=22;
+    const tiles = new Array(w*h).fill(T.EMPTY);
+    const set=(x,y,v)=>{ if(x>=0&&y>=0&&x<w&&y<h) tiles[y*w+x]=v; };
+    const get=(x,y)=> (x<0||y<0||x>=w||y>=h) ? T.STONE : tiles[y*w+x];
+
+    // Rolling ground
+    for(let x=0;x<w;x++){
+      const surface = (x<25) ? h-4 : (x<55) ? h-5 : (x<90) ? h-4 : (x<118) ? h-6 : h-4;
+      for(let y=surface;y<h;y++){
+        set(x,y, y===surface ? (x<90?T.GRASS:T.ROAD) : T.DIRT);
+      }
+    }
+    // Little hills/platforms
+    for(let x=16;x<32;x++) set(x,12,T.DIRT);
+    for(let x=32;x<44;x++) set(x,10,T.DIRT);
+    for(let x=70;x<82;x++) set(x,11,T.DIRT);
+    for(let x=96;x<110;x++) set(x,9,T.METAL);
+
+    // House area (end)
+    for(let x=125;x<138;x++){
+      for(let y=6;y<14;y++){
+        if(y===6||y===13||x===125||x===137) set(x,y,T.HOUSE);
+      }
+    }
+    set(131,13,T.DOOR); // "front door" tile as interaction
+    // Some hazards on road
+    for(let x=92;x<100;x++){
+      if(x%2===0) set(x, (h-5), T.SPIKE);
+    }
+
+    return {
+      id: 3,
+      name: "Caminho de Casa",
+      w,h,tiles,
+      spawn: { x: 4*TILE, y: 10*TILE },
+      checkpoint: { x: 86*TILE, y: 9*TILE },
+      exit: { x: 129*TILE, y: 7*TILE, w: 6*TILE, h: 8*TILE }, // inside house
+      objectives: [
+        "Última corrida! Evite as armadilhas e os curiosos.",
+        "Se te perseguirem, faz cara de inocente. Funciona… às vezes.",
+        "Toque a porta de casa e grite (mentalmente): ALÔ LILINHA!"
+      ],
+      get,set,
+      theme: "neighborhood"
+    };
+  }
+
+  const LEVELS = [makeLevel1, makeLevel2, makeLevel3];
+
+  // Entity factory
+  function aabb(ax,ay,aw,ah,bx,by,bw,bh){
+    return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
+  }
+
+  function newPlayer(){
+    return {
+      x: 0, y: 0, vx: 0, vy: 0,
+      w: 18, h: 18,
+      onGround:false,
+      face: 1,
+      run:false,
+      jumpBuf: 0,
+      coyote: 0,
+      invuln: 0,
+      hp: 5,
+      maxHp: 5,
+      bones: 0,
+      treats: 0,
+      hasKey: false,
+      animT: 0,
+      blink: 0,
+      respawnX: 0, respawnY: 0,
+      objectiveStep: 0,
+    };
+  }
+
+  function newGuard(x,y,dir=1){
+    return {
+      kind:"guard",
+      x,y, vx: 60*dir, vy: 0,
+      w: 18, h: 20,
+      patrolMin: x-5*TILE,
+      patrolMax: x+5*TILE,
+      face: dir,
+      sawPlayer: 0,
+      cooldown: 0
+    };
+  }
+
+  function newDrone(x,y){
+    return {
+      kind:"drone",
+      x,y, vx: 0, vy: 0,
+      w: 18, h: 12,
+      t: Math.random()*10,
+      range: 4*TILE,
+      baseY: y,
+      laser: 0
+    };
+  }
+
+  function newSaw(x,y){
+    return {
+      kind:"saw",
+      x,y, w: 18, h: 18,
+      t: Math.random()*10,
+      range: 5*TILE,
+      baseX: x
+    };
+  }
+
+  function newChaser(x,y){
+    return {
+      kind:"chaser",
+      x,y, vx: 0, vy: 0,
+      w: 18, h: 18,
+      ttl: 10,
+      face: 1
+    };
+  }
+
+  function newPickup(kind,x,y){
+    // kind: 'key' | 'bone' | 'treat' | 'checkpoint'
+    return { kind, x,y, w: 14, h: 14, t: 0, taken:false };
+  }
+
+  function newDoor(x,y,locked=true, id="door"){
+    return { kind:"door", x,y, w: TILE, h: TILE*2, locked, id, open:false };
+  }
+
+  // Game state
+  const State = {
+    mode: "menu", // menu | playing | paused | gameover | win
+    time: 0,
+    dt: 0,
+    camX: 0, camY: 0,
+    shake: 0,
+    alert: 0, // 0..100
+    alertDecay: 7,
+    alertSpawned: false,
+    levelIndex: 0,
+    level: null,
+    player: newPlayer(),
+    entities: [],
+    pickups: [],
+    doors: [],
+    msg: "",
+    msgT: 0,
+    lastCheckpoint: null,
+  };
+
+  const SAVE_KEY = "aloLilinha_save_v1";
+
+  function saveGame(){
+    const s = {
+      levelIndex: State.levelIndex,
+      hp: State.player.hp,
+      maxHp: State.player.maxHp,
+      bones: State.player.bones,
+      treats: State.player.treats,
+      hasKey: State.player.hasKey,
+      objectiveStep: State.player.objectiveStep,
+      respawnX: State.player.respawnX,
+      respawnY: State.player.respawnY,
+      alert: State.alert,
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(s));
+    updateSaveBadge();
+  }
+
+  function loadGame(){
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return null;
+    try{ return JSON.parse(raw); }catch(e){ return null; }
+  }
+
+  function clearSave(){
+    localStorage.removeItem(SAVE_KEY);
+    updateSaveBadge();
+  }
+
+  function updateSaveBadge(){
+    const s = loadGame();
+    if(!s){
+      saveBadge.innerHTML = `Progresso: <b>Novo</b>`;
+      btnContinue.disabled = true;
+      btnContinue.style.opacity = .6;
+    }else{
+      saveBadge.innerHTML = `Progresso: <b>Fase ${s.levelIndex+1}</b>`;
+      btnContinue.disabled = false;
+      btnContinue.style.opacity = 1;
+    }
+  }
+  updateSaveBadge();
+
+  function setMode(m){
+    State.mode = m;
+    if(m==="menu"){
+      overlay.style.display = "flex";
+    }else{
+      overlay.style.display = "none";
+    }
+  }
+
+  function setMessage(text, t=1.6){
+    State.msg = text;
+    State.msgT = t;
+  }
+
+  // Level setup: build entities/pickups/doors
+  function startLevel(index, fromSave=null){
+    State.levelIndex = clamp(index,0,LEVELS.length-1);
+    State.level = LEVELS[State.levelIndex]();
+    State.entities = [];
+    State.pickups = [];
+    State.doors = [];
+    State.alert = 0;
+    State.alertSpawned = false;
+    State.time = 0;
+
+    // player reset
+    const p = State.player = newPlayer();
+    p.maxHp = 5;
+    p.hp = 5;
+
+    // Level-specific population
+    const L = State.level;
+
+    // Doors: cell door in level 1 and main gate; house door in level 3
+    // We'll place interactive "doors" by scanning tiles and spawning a door entity
+    for(let y=0;y<L.h;y++){
+      for(let x=0;x<L.w;x++){
+        const id = L.tiles[y*L.w+x];
+        if(id === T.DOOR){
+          // create door entity; keep tile as empty for collision; door entity blocks
+          L.tiles[y*L.w+x] = T.EMPTY;
+          const dy = (State.levelIndex===0) ? (y*TILE - TILE) : (y*TILE - TILE); // tall
+          const doorId = `door_${x}_${y}`;
+          const locked = true;
+          State.doors.push(newDoor(x*TILE, dy, locked, doorId));
+        }
+      }
+    }
+
+    // Pickups
+    // Key in level 1 near cell
+    if(L.id===1){
+      State.pickups.push(newPickup("key", 12*TILE, 7*TILE));
+      State.pickups.push(newPickup("bone", 26*TILE, 7*TILE));
+      State.pickups.push(newPickup("treat", 56*TILE, (L.h-9)*TILE));
+      State.pickups.push(newPickup("checkpoint", L.checkpoint.x, L.checkpoint.y));
+      // Enemies
+      State.entities.push(newGuard(20*TILE, (L.h-7)*TILE, 1));
+      State.entities.push(newGuard(72*TILE, (L.h-7)*TILE, -1));
+      State.entities.push(newDrone(52*TILE, 9*TILE));
+      State.entities.push(newSaw(84*TILE, (L.h-7)*TILE));
+    } else if(L.id===2){
+      State.pickups.push(newPickup("bone", 18*TILE, 8*TILE));
+      State.pickups.push(newPickup("treat", 60*TILE, 10*TILE));
+      State.pickups.push(newPickup("bone", 94*TILE, 7*TILE));
+      State.pickups.push(newPickup("checkpoint", L.checkpoint.x, L.checkpoint.y));
+      // Enemies/traps
+      State.entities.push(newGuard(28*TILE, (L.h-7)*TILE, 1));
+      State.entities.push(newSaw(44*TILE, (L.h-7)*TILE));
+      State.entities.push(newDrone(70*TILE, 7*TILE));
+      State.entities.push(newDrone(102*TILE, 9*TILE));
+    } else if(L.id===3){
+      State.pickups.push(newPickup("treat", 24*TILE, 9*TILE));
+      State.pickups.push(newPickup("bone", 40*TILE, 9*TILE));
+      State.pickups.push(newPickup("bone", 76*TILE, 10*TILE));
+      State.pickups.push(newPickup("checkpoint", L.checkpoint.x, L.checkpoint.y));
+      // Enemies
+      State.entities.push(newGuard(58*TILE, (L.h-7)*TILE, 1));
+      State.entities.push(newGuard(98*TILE, (L.h-8)*TILE, -1));
+      State.entities.push(newDrone(110*TILE, 7*TILE));
+      State.entities.push(newSaw(92*TILE, (L.h-7)*TILE));
+    }
+
+    // Spawn at start
+    p.x = L.spawn.x;
+    p.y = L.spawn.y;
+    p.respawnX = p.x;
+    p.respawnY = p.y;
+    p.objectiveStep = 0;
+
+    // Apply save if continuing
+    if(fromSave){
+      State.levelIndex = clamp(fromSave.levelIndex ?? State.levelIndex,0,LEVELS.length-1);
+      if(State.levelIndex !== index){
+        // if save points to different level, restart properly
+        return startLevel(State.levelIndex, fromSave);
+      }
+      p.maxHp = fromSave.maxHp ?? p.maxHp;
+      p.hp = clamp(fromSave.hp ?? p.hp, 1, p.maxHp);
+      p.bones = fromSave.bones ?? 0;
+      p.treats = fromSave.treats ?? 0;
+      p.hasKey = !!fromSave.hasKey;
+      p.objectiveStep = fromSave.objectiveStep ?? 0;
+      p.x = fromSave.respawnX ?? p.x;
+      p.y = fromSave.respawnY ?? p.y;
+      p.respawnX = p.x;
+      p.respawnY = p.y;
+      State.alert = fromSave.alert ?? 0;
+
+      // Mark checkpoint pickup as taken if we respawned there
+      for(const pk of State.pickups){
+        if(pk.kind==="checkpoint" && Math.abs(pk.x - p.respawnX) < 4 && Math.abs(pk.y - p.respawnY) < 40){
+          pk.taken = true;
+        }
+      }
+    }
+
+    // Update objective text in menu
+    menuObjective.textContent = `Fase ${L.id}: ${L.objectives[0]}`;
+    setMessage(L.objectives[p.objectiveStep] || "Boa sorte!");
+  }
+
+  // Tile collision
+  function tileAt(L, wx, wy){
+    const tx = Math.floor(wx / TILE);
+    const ty = Math.floor(wy / TILE);
+    if(tx<0||ty<0||tx>=L.w||ty>=L.h) return T.STONE;
+    return L.tiles[ty*L.w+tx];
+  }
+  function solid(tile){
+    return tile===T.DIRT||tile===T.STONE||tile===T.BRICK||tile===T.METAL||tile===T.GRASS||tile===T.ROAD||tile===T.PIPE||tile===T.HOUSE;
+  }
+  function hazard(tile){
+    return tile===T.SPIKE || tile===T.LASER;
+  }
+
+  function doorBlocking(door){
+    return !door.open;
+  }
+
+  function moveAndCollide(L, ent, dt){
+    // AABB collision with tiles + doors
+    let x = ent.x, y = ent.y;
+    let vx = ent.vx, vy = ent.vy;
+
+    // Horizontal
+    x += vx*dt;
+    // doors collision
+    for(const d of State.doors){
+      if(doorBlocking(d) && aabb(x,y,ent.w,ent.h,d.x,d.y,d.w,d.h)){
+        if(vx>0) x = d.x - ent.w;
+        else if(vx<0) x = d.x + d.w;
+        vx = 0;
+      }
+    }
+    // tiles collision
+    if(vx!==0){
+      const dir = Math.sign(vx);
+      const aheadX = dir>0 ? x+ent.w : x;
+      const top = y+1;
+      const bottom = y+ent.h-1;
+      const y0 = Math.floor(top/TILE);
+      const y1 = Math.floor(bottom/TILE);
+      const tx = Math.floor(aheadX/TILE);
+      for(let ty=y0;ty<=y1;ty++){
+        const t = L.get(tx,ty);
+        if(solid(t)){
+          if(dir>0) x = tx*TILE - ent.w;
+          else x = (tx+1)*TILE;
+          vx = 0;
+          break;
+        }
+      }
+    }
+
+    // Vertical
+    y += vy*dt;
+
+    ent.onGround = false;
+
+    // doors vertical collision
+    for(const d of State.doors){
+      if(doorBlocking(d) && aabb(x,y,ent.w,ent.h,d.x,d.y,d.w,d.h)){
+        if(vy>0){
+          y = d.y - ent.h;
+          vy = 0;
+          ent.onGround = true;
+        }else if(vy<0){
+          y = d.y + d.h;
+          vy = 0;
+        }
+      }
+    }
+
+    if(vy!==0){
+      const dir = Math.sign(vy);
+      const probeY = dir>0 ? y+ent.h : y;
+      const left = x+2;
+      const right = x+ent.w-2;
+      const x0 = Math.floor(left/TILE);
+      const x1 = Math.floor(right/TILE);
+      const ty = Math.floor(probeY/TILE);
+      for(let tx=x0;tx<=x1;tx++){
+        const t = L.get(tx,ty);
+        if(solid(t)){
+          if(dir>0){
+            y = ty*TILE - ent.h;
+            vy = 0;
+            ent.onGround = true;
+          }else{
+            y = (ty+1)*TILE;
+            vy = 0;
+          }
+          break;
+        }
+      }
+    }
+
+    ent.x = x;
+    ent.y = y;
+    ent.vx = vx;
+    ent.vy = vy;
+  }
+
+  // Damage / respawn
+  function hurtPlayer(amount=1, knockX=220, knockY=-380){
+    const p = State.player;
+    if(p.invuln>0) return;
+    p.hp -= amount;
+    p.invuln = 1.0;
+    p.vx = knockX * -p.face;
+    p.vy = knockY;
+    State.shake = 0.25;
+    audio.beep(140,0.08,"square",0.05);
+    if(p.hp<=0){
+      State.mode = "gameover";
+      setMode("menu");
+      overlay.style.display = "flex";
+      document.getElementById("menuCard").querySelector(".subtitle").textContent =
+        "Game Over. Lili tentou, mas levou um susto daqueles. Bora tentar de novo — agora com mais caramelo e menos problema?";
+      btnPlay.textContent = "Tentar novamente";
+      btnContinue.style.display = "none";
+      menuObjective.textContent = "Dica: observe o cone de visão dos guardas e use checkpoints!";
+    }
+  }
+
+  function respawn(){
+    const p = State.player;
+    p.hp = p.maxHp;
+    p.vx = 0; p.vy = 0;
+    p.x = p.respawnX;
+    p.y = p.respawnY;
+    State.alert = Math.max(0, State.alert-20);
+    State.alertSpawned = false;
+    setMessage("Respawn no checkpoint. Lili: “tá tudo sob controle…”");
+  }
+
+  // Interactions
+  function tryInteract(){
+    const p = State.player;
+    // Check near door
+    for(const d of State.doors){
+      if(aabb(p.x-6,p.y-6,p.w+12,p.h+12, d.x,d.y,d.w,d.h)){
+        if(!d.open){
+          if(d.locked){
+            if(p.hasKey){
+              d.locked = false;
+              d.open = true;
+              p.hasKey = false;
+              audio.beep(880,0.06,"square",0.05);
+              audio.beep(660,0.06,"square",0.05);
+              setMessage("Clique! Portão aberto. Lili: “obrigada, chavezinha!”");
+              // objective progression
+              if(State.level.id===1 && p.objectiveStep<2){
+                p.objectiveStep = 2;
+                setMessage(State.level.objectives[p.objectiveStep]);
+              }
+              if(State.level.id===3){
+                // House door is win condition, but we also have exit zone; still allow
+                setMessage("Toc toc… Alô? É a Lilinha! 🐶");
+              }
+              saveGame();
+              return;
+            }else{
+              audio.beep(220,0.06,"square",0.05);
+              setMessage("Tá trancado. Precisa de uma chave.");
+              return;
+            }
+          }else{
+            d.open = true;
+            audio.beep(740,0.06,"square",0.05);
+            setMessage("Porta aberta!");
+            saveGame();
+            return;
+          }
+        }
+      }
+    }
+    // Lever-like: none; can add later
+  }
+
+  // Alert system
+  function addAlert(v){
+    State.alert = clamp(State.alert + v, 0, 100);
+    if(State.alert >= 100 && !State.alertSpawned){
+      // spawn chaser near player behind camera
+      const p = State.player;
+      const spawnX = p.x - 220;
+      const spawnY = p.y;
+      State.entities.push(newChaser(spawnX, spawnY));
+      State.alertSpawned = true;
+      State.shake = 0.35;
+      setMessage("ALERTA MÁXIMO! Eles soltaram um perseguidor! 😬");
+      audio.beep(120,0.12,"square",0.06);
+      audio.beep(180,0.12,"square",0.06);
+      audio.beep(220,0.12,"square",0.06);
+    }
+  }
+
+  // Progress to next level
+  function nextLevel(){
+    const idx = State.levelIndex + 1;
+    if(idx >= LEVELS.length){
+      // WIN
+      State.mode = "win";
+      setMode("menu");
+      overlay.style.display = "flex";
+      document.getElementById("menuCard").querySelector(".subtitle").textContent =
+        "Lili chegou em casa! 🏡🐶\n\nEla olha pra você e pensa: “Alô Lilinha… eu consegui!”\nDepois ela dá uma voltinha, encontra um petisco imaginário, e decide que prisão mesmo é ficar sem carinho.";
+      btnPlay.textContent = "Jogar de novo";
+      btnContinue.style.display = "none";
+      menuObjective.textContent = "Fim! (Mas Lili ainda quer ossos.)";
+      clearSave();
+      return;
+    }
+    startLevel(idx, null);
+    State.mode = "playing";
+    setMode("playing");
+    saveGame();
+  }
+
+  // Pause
+  function togglePause(){
+    if(State.mode==="playing"){
+      State.mode="paused";
+      setMode("menu");
+      overlay.style.display="flex";
+      document.getElementById("menuCard").querySelector(".subtitle").textContent =
+        "Pausado. Lili aproveitou pra pensar em petiscos. (Prioridades.)";
+      btnPlay.textContent = "Voltar";
+      btnContinue.style.display = "none";
+      menuObjective.textContent = "Pressione P para continuar.";
+    }else if(State.mode==="paused"){
+      State.mode="playing";
+      setMode("playing");
+      btnContinue.style.display = "";
+    }
+  }
+
+  // UI buttons
+  btnPlay.addEventListener("click", () => {
+    audio.beep(660,0.05,"square",0.05);
+    const s = loadGame();
+
+    if(State.mode==="paused"){
+      // resume
+      State.mode="playing";
+      setMode("playing");
+      btnContinue.style.display = "";
+      return;
+    }
+
+    if(State.mode==="gameover" || State.mode==="win"){
+      // restart fresh
+      btnContinue.style.display = "";
+      btnPlay.textContent = "Jogar";
+      document.getElementById("menuCard").querySelector(".subtitle").textContent =
+        "Lili, a cachorra caramelo mais esperta do bairro, está fugindo da prisão pra voltar pra casa. Pegue a chave, fuja do portão e não deixe os guardas aumentarem o alerta.";
+      startLevel(0, null);
+      State.mode="playing";
+      setMode("playing");
+      saveGame();
+      return;
+    }
+
+    // Fresh start
+    startLevel(0, null);
+    State.mode="playing";
+    setMode("playing");
+    saveGame();
+  });
+
+  btnContinue.addEventListener("click", () => {
+    audio.beep(660,0.05,"square",0.05);
+    const s = loadGame();
+    if(!s){ showHint("Sem progresso salvo."); return; }
+    startLevel(s.levelIndex ?? 0, s);
+    State.mode="playing";
+    setMode("playing");
+  });
+
+  btnReset.addEventListener("click", () => {
+    audio.beep(220,0.06,"square",0.05);
+    clearSave();
+    showHint("Progresso apagado.");
+  });
+
+  // Start on menu
+  setMode("menu");
+
+  // Objective text on menu should reflect save if exists
+  (function initMenuText(){
+    const s = loadGame();
+    if(s){
+      menuObjective.textContent = `Continuar da Fase ${ (s.levelIndex??0)+1 }`;
+    }else{
+      menuObjective.textContent = `Fase 1: Encontre a chave da cela, abra o portão e alcance a saída.`;
+    }
+  })();
+
+  // Draw tiles
+  function drawTile(id, x, y, theme, tx, ty){
+    // base colors by id (pixel art blocks)
+    switch(id){
+      case T.DIRT:{
+        pixRect(x,y,TILE,TILE,"#4b2e1f");
+        pixRect(x,y+TILE-6,TILE,6,"#3b2418");
+        pixRect(x+3,y+4,3,3,"rgba(255,255,255,0.07)");
+        break;
+      }
+      case T.GRASS:{
+        pixRect(x,y,TILE,TILE,"#3b2a1e");
+        pixRect(x,y,TILE,7,"#1f9d55");
+        pixRect(x+2,y+1,5,2,"rgba(255,255,255,0.10)");
+        break;
+      }
+      case T.STONE:{
+        pixRect(x,y,TILE,TILE,"#3b3f46");
+        pixRect(x+2,y+3,6,3,"rgba(255,255,255,0.07)");
+        pixRect(x+12,y+11,6,4,"rgba(0,0,0,0.20)");
+        break;
+      }
+      case T.BRICK:{
+        pixRect(x,y,TILE,TILE,"#6b2a2a");
+        pixRect(x,y+TILE-1,TILE,1,"rgba(0,0,0,0.35)");
+        pixRect(x,y+7,TILE,1,"rgba(0,0,0,0.25)");
+        pixRect(x,y+14,TILE,1,"rgba(0,0,0,0.22)");
+        pixRect(x+8,y,1,TILE,"rgba(0,0,0,0.18)");
+        pixRect(x+16,y+7,1,TILE-7,"rgba(0,0,0,0.18)");
+        break;
+      }
+      case T.METAL:{
+        pixRect(x,y,TILE,TILE,"#374151");
+        pixRect(x,y,TILE,3,"#4b5563");
+        pixRect(x+3,y+5,TILE-6,1,"rgba(255,255,255,0.10)");
+        pixRect(x+4,y+10,TILE-8,1,"rgba(0,0,0,0.25)");
+        break;
+      }
+      case T.ROAD:{
+        pixRect(x,y,TILE,TILE,"#1f2937");
+        pixRect(x+2,y+2,TILE-4,TILE-4,"rgba(255,255,255,0.03)");
+        if((tx+ty)%6===0) pixRect(x+10,y+4,2,2,"rgba(255,255,255,0.08)");
+        break;
+      }
+      case T.PIPE:{
+        pixRect(x,y,TILE,TILE,"#0f3d2e");
+        pixRect(x+2,y+3,TILE-4,TILE-6,"#115e46");
+        pixRect(x+4,y+5,TILE-8,2,"rgba(255,255,255,0.10)");
+        break;
+      }
+      case T.HOUSE:{
+        pixRect(x,y,TILE,TILE,"#7c2d12");
+        pixRect(x+2,y+2,TILE-4,TILE-4,"#9a3412");
+        pixRect(x+4,y+4,4,4,"rgba(255,255,255,0.08)");
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  // Backgrounds
+  function drawBackground(theme, camX){
+    // simple parallax layers
+    ctx.fillStyle = "#05070f";
+    ctx.fillRect(0,0,BASE_W,BASE_H);
+
+    const t = State.time;
+
+    // Stars / noise
+    const starCount = 60;
+    for(let i=0;i<starCount;i++){
+      const sx = (i*157 + Math.floor(camX*0.12)) % (BASE_W+200) - 100;
+      const sy = (i*73) % BASE_H;
+      const a = 0.15 + (i%5)*0.03;
+      pixRect(sx, sy, 2, 2, `rgba(255,255,255,${a})`);
+    }
+
+    if(theme==="prison"){
+      // distant bars
+      for(let i=0;i<22;i++){
+        const x = ((i*60 - camX*0.18) % (BASE_W+120)) - 60;
+        pixRect(x, 40, 10, BASE_H, "rgba(120,140,180,0.05)");
+      }
+      // fog
+      const g = ctx.createLinearGradient(0,0,0,BASE_H);
+      g.addColorStop(0,"rgba(99,102,241,0.05)");
+      g.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,BASE_W,BASE_H);
+    } else if(theme==="sewer"){
+      // pipes silhouette
+      for(let i=0;i<10;i++){
+        const x = ((i*140 - camX*0.25) % (BASE_W+260)) - 140;
+        pixRect(x, 120, 120, 30, "rgba(16,185,129,0.06)");
+        pixRect(x+20, 60, 30, 90, "rgba(16,185,129,0.05)");
+      }
+      const g = ctx.createRadialGradient(BASE_W*0.3, BASE_H*0.5, 60, BASE_W*0.3, BASE_H*0.5, 520);
+      g.addColorStop(0,"rgba(34,197,94,0.06)");
+      g.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,BASE_W,BASE_H);
+    } else {
+      // neighborhood sky glow + clouds
+      const g = ctx.createLinearGradient(0,0,0,BASE_H);
+      g.addColorStop(0,"rgba(56,189,248,0.12)");
+      g.addColorStop(0.6,"rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,BASE_W,BASE_H);
+
+      for(let i=0;i<8;i++){
+        const x = ((i*180 - camX*0.15) % (BASE_W+300)) - 150;
+        const y = 60 + (i%3)*28;
+        pixRect(x,y,120,22,"rgba(255,255,255,0.05)");
+        pixRect(x+18,y-8,80,18,"rgba(255,255,255,0.04)");
+      }
+    }
+  }
+
+  // Sprite drawing (procedural pixel art)
+  function drawLili(p, screenX, screenY){
+    // 2-4 frame walk animation by toggling leg pixels
+    const frame = Math.floor(p.animT*10) % 4;
+    const flip = p.face < 0;
+    const w = p.w, h = p.h;
+
+    ctx.save();
+    ctx.translate((screenX + w/2)|0, (screenY + h/2)|0);
+    ctx.scale(flip ? -1 : 1, 1);
+    ctx.translate((-w/2)|0, (-h/2)|0);
+
+    // body colors
+    const fur = "#d08c3f";     // caramelo
+    const fur2 = "#b9722b";
+    const dark = "#111827";
+    const blush = "rgba(255,255,255,0.08)";
+
+    // tail wag
+    const wag = Math.sin(State.time*10) * 2;
+
+    // body
+    pixRect(2,6,14,9,fur);
+    pixRect(3,7,12,7,fur2);
+    // head
+    pixRect(10,3,8,7,fur);
+    pixRect(11,4,6,5,fur2);
+    // ear
+    pixRect(10,2,3,3,fur2);
+    // snout
+    pixRect(16,6,3,3,fur);
+    pixRect(17,7,2,2,fur2);
+    // nose
+    pixRect(18,7,1,1,dark);
+    // eye
+    if(p.blink>0){
+      pixRect(14,5,2,1,dark);
+    }else{
+      pixRect(14,5,1,1,dark);
+    }
+    // highlight
+    pixRect(12,4,2,1,blush);
+
+    // legs (frame)
+    const legY = 14;
+    const leg1 = (frame===0||frame===2)?1:0;
+    const leg2 = (frame===1||frame===3)?1:0;
+    pixRect(5,legY,2,3,fur2);
+    pixRect(7,legY+leg1,2,3,fur2);
+    pixRect(11,legY+leg2,2,3,fur2);
+    pixRect(13,legY,2,3,fur2);
+
+    // tail
+    pixRect(0,8,3,2,fur2);
+    pixRect(0,7+((wag>0)?1:0),2,1,fur);
+
+    // little collar
+    pixRect(10,9,5,1,"#ef4444");
+
+    ctx.restore();
+  }
+
+  function drawGuard(g, sx, sy){
+    const frame = Math.floor(State.time*6) % 2;
+    const flip = g.face < 0;
+    ctx.save();
+    ctx.translate((sx+g.w/2)|0, (sy+g.h/2)|0);
+    ctx.scale(flip?-1:1,1);
+    ctx.translate((-g.w/2)|0, (-g.h/2)|0);
+
+    // body
+    pixRect(4,3,10,14,"#1f2937");
+    pixRect(5,4,8,12,"#374151");
+    // head
+    pixRect(5,0,8,5,"#cbd5e1");
+    pixRect(6,1,6,3,"#94a3b8");
+    // visor
+    pixRect(7,2,4,1,"#111827");
+    // legs
+    pixRect(5,16,3,4,"#111827");
+    pixRect(10,16+frame,3,4,"#111827");
+    // baton
+    pixRect(1,10,3,1,"#111827");
+    pixRect(1,11,3,1,"#0b1220");
+
+    ctx.restore();
+
+    // vision cone
+    const coneLen = 140;
+    const cx = sx + g.w/2;
+    const cy = sy + 10;
+    ctx.save();
+    ctx.globalAlpha = 0.10 + g.sawPlayer*0.25;
+    ctx.fillStyle = g.sawPlayer>0 ? "rgba(239,68,68,0.35)" : "rgba(56,189,248,0.25)";
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    const dir = g.face;
+    ctx.lineTo(cx + dir*coneLen, cy-40);
+    ctx.lineTo(cx + dir*coneLen, cy+40);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawDrone(d, sx, sy){
+    // body
+    pixRect(sx,sy,d.w,d.h,"#4b5563");
+    pixRect(sx+2,sy+2,d.w-4,d.h-4,"#111827");
+    pixRect(sx+4,sy+4,3,3,"#22c55e");
+    pixRect(sx+9,sy+4,3,3,"#22c55e");
+    // blinking light
+    if((Math.floor(State.time*4)%2)===0) pixRect(sx+6,sy+1,6,1,"#f59e0b");
+
+    // scan beam
+    const beam = 90 + Math.sin(d.t*3)*10;
+    ctx.save();
+    ctx.globalAlpha = 0.12 + d.laser*0.25;
+    ctx.fillStyle = d.laser>0 ? "rgba(239,68,68,0.35)" : "rgba(34,197,94,0.25)";
+    ctx.beginPath();
+    ctx.moveTo(sx+d.w/2, sy+d.h);
+    ctx.lineTo(sx-30, sy+d.h+beam);
+    ctx.lineTo(sx+d.w+30, sy+d.h+beam);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawSaw(s, sx, sy){
+    // rotating saw (pixel circle)
+    const t = State.time*6;
+    pixRect(sx,sy,18,18,"#111827");
+    pixRect(sx+1,sy+1,16,16,"#9ca3af");
+    pixRect(sx+4,sy+4,10,10,"#4b5563");
+    // teeth
+    const tooth = ((Math.floor(t)%4)+4)%4;
+    if(tooth===0) pixRect(sx+8,sy,2,3,"#e5e7eb");
+    if(tooth===1) pixRect(sx+15,sy+8,3,2,"#e5e7eb");
+    if(tooth===2) pixRect(sx+8,sy+15,2,3,"#e5e7eb");
+    if(tooth===3) pixRect(sx,sy+8,3,2,"#e5e7eb");
+  }
+
+  function drawChaser(c, sx, sy){
+    // simple "robot dog"
+    pixRect(sx,sy,c.w,c.h,"#111827");
+    pixRect(sx+2,sy+2,c.w-4,c.h-4,"#ef4444");
+    pixRect(sx+4,sy+4,3,3,"#111827");
+    pixRect(sx+11,sy+4,3,3,"#111827");
+    pixRect(sx+6,sy+10,6,2,"#111827");
+  }
+
+  function drawPickup(pk, sx, sy){
+    pk.t += State.dt;
+    const bob = Math.sin(pk.t*4)*2;
+    const x = sx, y = sy + bob;
+    if(pk.kind==="key"){
+      pixRect(x+2,y+5,10,4,"#eab308");
+      pixRect(x+10,y+3,3,3,"#eab308");
+      pixRect(x+11,y+4,1,1,"#111827");
+      pixRect(x+4,y+4,2,1,"rgba(255,255,255,0.2)");
+    }else if(pk.kind==="bone"){
+      pixRect(x+3,y+6,8,3,"#a3e635");
+      pixRect(x+2,y+5,2,2,"#a3e635");
+      pixRect(x+10,y+5,2,2,"#a3e635");
+      pixRect(x+2,y+8,2,2,"#a3e635");
+      pixRect(x+10,y+8,2,2,"#a3e635");
+    }else if(pk.kind==="treat"){
+      pixRect(x+4,y+5,6,6,"#fb7185");
+      pixRect(x+5,y+6,4,4,"rgba(255,255,255,0.12)");
+    }else if(pk.kind==="checkpoint"){
+      pixRect(x+5,y+2,2,16,"#e2e8f0");
+      pixRect(x+7,y+2,8,5,"#f59e0b");
+      pixRect(x+7,y+7,8,3,"#d97706");
+    }
+  }
+
+  function drawDoor(d, sx, sy){
+    // tall door/gate
+    pixRect(sx,sy,d.w,d.h,"#0b1220");
+    pixRect(sx+2,sy+2,d.w-4,d.h-4, d.open ? "rgba(0,0,0,0)" : "#1f2937");
+    if(!d.open){
+      // bars
+      for(let i=0;i<4;i++){
+        pixRect(sx+4+i*5, sy+4, 2, d.h-8, "rgba(148,163,184,0.35)");
+      }
+      // lock
+      if(d.locked){
+        pixRect(sx+d.w-8, sy+8, 4, 6, "#eab308");
+        pixRect(sx+d.w-7, sy+10, 2, 2, "#111827");
+      }
+    }
+  }
+
+  // HUD
+  function drawHUD(){
+    const p = State.player;
+
+    // top bar background
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    pixRect(10,10, 330, 64, "rgba(2,6,23,0.60)");
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    ctx.strokeRect(10.5,10.5,330,64);
+
+    // hearts
+    let x = 20, y = 18;
+    for(let i=0;i<p.maxHp;i++){
+      const full = i < p.hp;
+      // pixel heart
+      const c = full ? "#fb7185" : "rgba(255,255,255,0.18)";
+      pixRect(x+2,y+2,4,4,c);
+      pixRect(x+8,y+2,4,4,c);
+      pixRect(x+2,y+6,10,6,c);
+      pixRect(x+4,y+12,6,3,c);
+      x += 18;
+    }
+
+    // items
+    pixText(`🦴 ${p.bones}`, 20, 42, 14, "#cbd5e1");
+    pixText(`🍪 ${p.treats}`, 100, 42, 14, "#cbd5e1");
+    pixText(`🔑 ${p.hasKey ? "1" : "0"}`, 190, 42, 14, "#cbd5e1");
+
+    // alert
+    const barX=250, barY=42, barW=80, barH=10;
+    pixRect(barX,barY,barW,barH,"rgba(255,255,255,0.12)");
+    pixRect(barX,barY, Math.floor(barW*(State.alert/100)), barH, State.alert>=70 ? "#ef4444" : "#38bdf8");
+    pixText("ALERTA", barX, barY-14, 11, "#cbd5e1");
+    ctx.restore();
+
+    // objective banner
+    const obj = State.level?.objectives?.[p.objectiveStep] || "";
+    if(obj){
+      ctx.save();
+      ctx.globalAlpha = 0.92;
+      const w = Math.min(700, 20 + obj.length*7);
+      const bx = (BASE_W/2 - w/2)|0;
+      pixRect(bx, 12, w, 22, "rgba(2,6,23,0.60)");
+      ctx.strokeStyle = "rgba(255,255,255,0.12)";
+      ctx.strokeRect(bx+0.5, 12.5, w, 22);
+      pixText(obj, BASE_W/2, 15, 12, "#e5e7eb", "center");
+      ctx.restore();
+    }
+
+    // message (temporary)
+    if(State.msgT>0){
+      ctx.save();
+      ctx.globalAlpha = clamp(State.msgT/1.2, 0, 1);
+      pixRect(10, BASE_H-48, 560, 32, "rgba(2,6,23,0.65)");
+      ctx.strokeStyle = "rgba(255,255,255,0.10)";
+      ctx.strokeRect(10.5, BASE_H-47.5, 560, 32);
+      pixText(State.msg, 20, BASE_H-42, 13, "#e5e7eb");
+      ctx.restore();
+    }
+  }
+
+  // Gameplay update
+  function update(dt){
+    State.dt = dt;
+    State.time += dt;
+
+    if(!State.level) return;
+
+    const L = State.level;
+    const p = State.player;
+
+    // blink
+    if(Math.random()<0.01) p.blink = 0.12;
+    p.blink = Math.max(0, p.blink - dt);
+
+    // message decay
+    State.msgT = Math.max(0, State.msgT - dt);
+
+    // Pause toggle
+    if(pressed("p")) togglePause();
+    if(State.mode!=="playing") return;
+
+    // input
+    const left = down("a") || down("arrowleft") || gamepad.left;
+    const right = down("d") || down("arrowright") || gamepad.right;
+    const jump = pressed("w") || pressed("arrowup") || pressed(" ") || pressed("space") || gamepad.jump;
+    const run = down("shift") || gamepad.run;
+    const interact = pressed("e") || gamepad.interact;
+
+    if(interact) tryInteract();
+
+    p.run = run;
+    const speed = run ? 220 : 150;
+
+    // jump buffer + coyote time
+    if(jump) p.jumpBuf = 0.12;
+    else p.jumpBuf = Math.max(0, p.jumpBuf - dt);
+
+    if(p.onGround) p.coyote = 0.10;
+    else p.coyote = Math.max(0, p.coyote - dt);
+
+    // horizontal accel
+    let targetVX = 0;
+    if(left) targetVX -= speed;
+    if(right) targetVX += speed;
+
+    if(targetVX !== 0) p.face = Math.sign(targetVX);
+
+    p.vx = lerp(p.vx, targetVX, 1 - Math.pow(0.0001, dt)); // smooth
+
+    // gravity
+    p.vy = Math.min(MAX_FALL, p.vy + GRAV*dt);
+
+    // jump if buffered
+    if(p.jumpBuf>0 && p.coyote>0){
+      p.vy = -520;
+      p.jumpBuf = 0;
+      p.coyote = 0;
+      audio.beep(520,0.04,"square",0.04);
+    }
+
+    // apply movement/collision
+    moveAndCollide(L, p, dt);
+
+    // animation time
+    p.animT += dt * (Math.abs(p.vx)>5 ? 1.4 : 0.6);
+
+    // invulnerability
+    p.invuln = Math.max(0, p.invuln - dt);
+
+    // Hazard check: tiles under body
+    const feetX0 = p.x+3, feetX1 = p.x+p.w-3;
+    const headY0 = p.y+2, footY = p.y+p.h-1;
+
+    // spikes/laser tiles
+    const checkPoints = [
+      [feetX0, footY],
+      [feetX1, footY],
+      [p.x+p.w/2, footY],
+      [p.x+p.w/2, headY0]
+    ];
+    for(const [wx,wy] of checkPoints){
+      const t = tileAt(L, wx, wy);
+      if(hazard(t)){
+        hurtPlayer(1, 240, -420);
+        setMessage(t===T.SPIKE ? "Ai! Espinho. Lili: “quem colocou isso aí?!”" : "ZAP! Laser. Lili: “isso não é carinho!”");
+        break;
+      }
+    }
+
+    // Pickups
+    for(const pk of State.pickups){
+      if(pk.taken) continue;
+      if(aabb(p.x,p.y,p.w,p.h, pk.x, pk.y, pk.w, pk.h)){
+        pk.taken = true;
+        if(pk.kind==="key"){
+          p.hasKey = true;
+          audio.beep(880,0.05,"square",0.05);
+          setMessage("Você pegou uma chave! 🔑");
+          // objective step: got key
+          if(L.id===1 && p.objectiveStep<1){
+            p.objectiveStep = 1;
+            setMessage(L.objectives[p.objectiveStep]);
+          }
+        }else if(pk.kind==="bone"){
+          p.bones += 1;
+          audio.beep(660,0.03,"square",0.03);
+        }else if(pk.kind==="treat"){
+          p.treats += 1;
+          p.hp = Math.min(p.maxHp, p.hp + 1);
+          audio.beep(740,0.04,"square",0.04);
+          setMessage("Petisco! Vida +1 🍪");
+        }else if(pk.kind==="checkpoint"){
+          p.respawnX = pk.x;
+          p.respawnY = pk.y - 20;
+          setMessage("Checkpoint ativado! ✅");
+          audio.beep(520,0.05,"square",0.05);
+          saveGame();
+        }
+      }
+    }
+
+    // Doors open collision: If door is open, ignore blocking
+    // Also auto-open unlocked doors when player pushes
+    for(const d of State.doors){
+      if(d.open) continue;
+      if(!d.locked && aabb(p.x,p.y,p.w,p.h,d.x,d.y,d.w,d.h)){
+        d.open = true;
+      }
+    }
+
+    // Entities update
+    for(const e of State.entities){
+      if(e.kind==="guard"){
+        e.cooldown = Math.max(0, e.cooldown - dt);
+
+        // patrol
+        e.vy = Math.min(MAX_FALL, e.vy + GRAV*dt);
+        moveAndCollide(L, e, dt);
+
+        // if hits wall or patrol bounds, turn
+        if(e.x < e.patrolMin){ e.x = e.patrolMin; e.face = 1; e.vx = 60; }
+        if(e.x > e.patrolMax){ e.x = e.patrolMax; e.face = -1; e.vx = -60; }
+        if(Math.abs(e.vx) < 1){
+          e.face *= -1;
+          e.vx = 60*e.face;
+        }
+
+        // vision cone check
+        const coneLen = 140;
+        const cx = e.x + e.w/2;
+        const cy = e.y + 10;
+        // approximate: player within rectangle in front and within y range
+        const inFront = (e.face>0) ? (p.x > cx && p.x < cx+coneLen) : (p.x < cx && p.x > cx-coneLen);
+        const dy = Math.abs((p.y + p.h/2) - cy);
+        const visible = inFront && dy < 44;
+
+        if(visible){
+          e.sawPlayer = clamp(e.sawPlayer + dt*2.2, 0, 1);
+          addAlert(dt*28);
+          if(e.sawPlayer>0.7 && e.cooldown<=0){
+            // small "shout" that nudges player / triggers chaser earlier
+            e.cooldown = 1.2;
+            setMessage("Guarda: “Ei! Volta aqui, caramelo!”");
+            audio.beep(260,0.08,"square",0.05);
+            addAlert(12);
+          }
+        }else{
+          e.sawPlayer = Math.max(0, e.sawPlayer - dt*1.2);
+        }
+
+        // contact damage
+        if(aabb(p.x,p.y,p.w,p.h, e.x,e.y,e.w,e.h)){
+          hurtPlayer(1, 260, -360);
+          setMessage("O guarda te pegou! Lili: “sem abraço hoje.”");
+        }
+      }
+      else if(e.kind==="drone"){
+        e.t += dt;
+        // hover motion
+        e.y = e.baseY + Math.sin(e.t*1.5)*10;
+        // scanning - if player below within range, raise alert
+        const px = p.x + p.w/2, py = p.y + p.h/2;
+        const dx = Math.abs(px - (e.x + e.w/2));
+        const dy2 = py - (e.y + e.h);
+        const sees = dx < 34 && dy2 > 0 && dy2 < 110;
+        if(sees){
+          e.laser = clamp(e.laser + dt*2.2, 0, 1);
+          addAlert(dt*18);
+        }else{
+          e.laser = Math.max(0, e.laser - dt*1.5);
+        }
+
+        // beam damages lightly if in it
+        if(sees && e.laser>0.5 && dx<16 && dy2<90){
+          hurtPlayer(1, 160, -320);
+          setMessage("Drone: “BZZT.” Lili: “isso foi pessoal!”");
+        }
+      }
+      else if(e.kind==="saw"){
+        e.t += dt;
+        e.x = e.baseX + Math.sin(e.t*1.8)*e.range;
+        if(aabb(p.x,p.y,p.w,p.h, e.x,e.y,e.w,e.h)){
+          hurtPlayer(1, 320, -420);
+          setMessage("Serra! Lili: “NÃO era pra ser decoração!”");
+        }
+      }
+      else if(e.kind==="chaser"){
+        e.ttl -= dt;
+        // chase player
+        const dx = (p.x - e.x);
+        e.face = dx>=0 ? 1 : -1;
+        const speed2 = 160 + (State.alert>60?60:0);
+        e.vx = clamp(dx, -1, 1) * speed2;
+        e.vy = Math.min(MAX_FALL, e.vy + GRAV*dt);
+        // jump over obstacles
+        if(e.onGround){
+          // if wall ahead
+          const aheadX = e.face>0 ? e.x+e.w+2 : e.x-2;
+          const t1 = tileAt(L, aheadX, e.y+e.h-2);
+          const t2 = tileAt(L, aheadX, e.y+6);
+          if(solid(t1) || solid(t2)){
+            e.vy = -460;
+          }
+        }
+        moveAndCollide(L, e, dt);
+
+        if(aabb(p.x,p.y,p.w,p.h, e.x,e.y,e.w,e.h)){
+          hurtPlayer(2, 360, -520);
+          setMessage("Perseguidor te alcançou! Lili: “vai morder? porque eu mordo também!”");
+        }
+
+        if(e.ttl <= 0){
+          e._dead = true;
+          State.alertSpawned = false;
+          State.alert = Math.max(0, State.alert-30);
+          setMessage("O perseguidor desistiu. (Ele também tem limites.)");
+        }
+      }
+    }
+    // cleanup dead chasers
+    State.entities = State.entities.filter(e => !e._dead);
+
+    // Alert decay
+    State.alert = Math.max(0, State.alert - State.alertDecay*dt);
+
+    // Checkpoints autosave occasionally
+    if(Math.floor(State.time*2)%30===0){
+      // light autosave, but not too frequent
+    }
+
+    // Fall out of world
+    if(p.y > L.h*TILE + 200){
+      respawn();
+    }
+
+    // Exit zone
+    if(aabb(p.x,p.y,p.w,p.h, L.exit.x, L.exit.y, L.exit.w, L.exit.h)){
+      // require for level 1: open door or at least key used? We'll just ensure cell opened progression:
+      if(L.id===1){
+        // If any door is open (gate) we allow; otherwise show message
+        const anyOpened = State.doors.some(d=>d.open && (d.h>=TILE*2));
+        if(!anyOpened){
+          setMessage("Ainda não! Abra o portão antes de fugir.");
+        }else{
+          setMessage("Fase concluída! Lili: “tchau, prisão!”");
+          audio.beep(880,0.06,"square",0.06);
+          audio.beep(990,0.06,"square",0.06);
+          saveGame();
+          nextLevel();
+        }
+      } else if(L.id===3){
+        setMessage("Casa doce casa! 🏡");
+        audio.beep(880,0.06,"square",0.06);
+        audio.beep(740,0.06,"square",0.06);
+        nextLevel(); // triggers win
+      } else {
+        setMessage("Fase concluída! Lili continua correndo!");
+        audio.beep(880,0.06,"square",0.06);
+        saveGame();
+        nextLevel();
+      }
+    }
+
+    // Auto-advance objective steps for other levels lightly
+    if(L.id===2 && p.objectiveStep<1 && p.x > 50*TILE){
+      p.objectiveStep = 1; setMessage(L.objectives[1]);
+      saveGame();
+    }
+    if(L.id===2 && p.objectiveStep<2 && p.x > 95*TILE){
+      p.objectiveStep = 2; setMessage(L.objectives[2]);
+      saveGame();
+    }
+    if(L.id===3 && p.objectiveStep<1 && p.x > 60*TILE){
+      p.objectiveStep = 1; setMessage(L.objectives[1]);
+      saveGame();
+    }
+    if(L.id===3 && p.objectiveStep<2 && p.x > 105*TILE){
+      p.objectiveStep = 2; setMessage(L.objectives[2]);
+      saveGame();
+    }
+
+    // Save on key events automatically handled above
+
+    // camera follow
+    const targetCamX = clamp(p.x - BASE_W*0.45, 0, L.w*TILE - BASE_W);
+    const targetCamY = clamp(p.y - BASE_H*0.55, 0, L.h*TILE - BASE_H);
+
+    State.camX = lerp(State.camX, targetCamX, 1 - Math.pow(0.0001, dt));
+    State.camY = lerp(State.camY, targetCamY, 1 - Math.pow(0.0001, dt));
+
+    // screen shake
+    State.shake = Math.max(0, State.shake - dt);
+  }
+
+  function render(){
+    if(!State.level){
+      // menu background
+      ctx.fillStyle="#05070f"; ctx.fillRect(0,0,BASE_W,BASE_H);
+      pixText("Alô Lilinha", BASE_W/2, BASE_H/2-10, 22, "#e5e7eb", "center");
+      pixText("Clique em Jogar", BASE_W/2, BASE_H/2+18, 14, "#94a3b8", "center");
+      return;
+    }
+
+    const L = State.level;
+
+    // camera with shake
+    const shake = State.shake>0 ? (Math.sin(State.time*60)*6*State.shake) : 0;
+    const camX = (State.camX + shake)|0;
+    const camY = (State.camY + shake*0.6)|0;
+
+    drawBackground(L.theme, camX);
+
+    // visible tile range
+    const x0 = Math.floor(camX / TILE) - 2;
+    const y0 = Math.floor(camY / TILE) - 2;
+    const x1 = x0 + Math.ceil(BASE_W / TILE) + 4;
+    const y1 = y0 + Math.ceil(BASE_H / TILE) + 4;
+
+    // Draw tiles
+    for(let ty=y0; ty<=y1; ty++){
+      for(let tx=x0; tx<=x1; tx++){
+        const id = L.get(tx,ty);
+        if(id===T.EMPTY) continue;
+        const sx = tx*TILE - camX;
+        const sy = ty*TILE - camY;
+        drawTile(id, sx, sy, L.theme, tx, ty);
+        if(id===T.LASER){
+          // extra glow
+          ctx.save();
+          ctx.globalAlpha = 0.35;
+          pixRect((sx|0), (sy|0), TILE, TILE, "rgba(239,68,68,0.18)");
+          ctx.restore();
+        }
+        if(id===T.SPIKE){
+          // spikes
+          pixRect(sx+2,sy+TILE-6,4,6,"#e5e7eb");
+          pixRect(sx+10,sy+TILE-6,4,6,"#e5e7eb");
+          pixRect(sx+18,sy+TILE-6,4,6,"#e5e7eb");
+        }
+      }
+    }
+
+    // Draw exit zone marker (subtle)
+    ctx.save();
+    ctx.globalAlpha = 0.10;
+    pixRect(L.exit.x - camX, L.exit.y - camY, L.exit.w, L.exit.h, "#22c55e");
+    ctx.restore();
+
+    // Draw pickups
+    for(const pk of State.pickups){
+      if(pk.taken) continue;
+      const sx = pk.x - camX;
+      const sy = pk.y - camY;
+      drawPickup(pk, sx, sy);
+    }
+
+    // Draw doors
+    for(const d of State.doors){
+      const sx = d.x - camX;
+      const sy = d.y - camY;
+      drawDoor(d, sx, sy);
+    }
+
+    // Draw entities
+    for(const e of State.entities){
+      const sx = e.x - camX;
+      const sy = e.y - camY;
+      if(e.kind==="guard") drawGuard(e, sx, sy);
+      else if(e.kind==="drone") drawDrone(e, sx, sy);
+      else if(e.kind==="saw") drawSaw(e, sx, sy);
+      else if(e.kind==="chaser") drawChaser(e, sx, sy);
+    }
+
+    // Draw player
+    const p = State.player;
+    const px = p.x - camX, py = p.y - camY;
+    if(!(p.invuln>0 && (Math.floor(State.time*18)%2===0))){
+      drawLili(p, px, py);
+    }
+
+    // Foreground subtle lighting
+    vignette();
+
+    // HUD
+    drawHUD();
+
+    // tiny debug for mobile hint
+    // pixText(`${State.mode}`, 900, 12, 10, "#94a3b8", "right");
+  }
+
+  // Main loop
+  let last = performance.now();
+  function loop(now){
+    const raw = (now - last) / 1000;
+    last = now;
+    const dt = clamp(raw, 0, 0.033);
+
+    // if in menu mode but still want a subtle animation background, keep rendering if a level exists
+    if(State.level && State.mode!=="paused" && State.mode!=="gameover" && State.mode!=="win"){
+      update(dt);
+    } else if(State.level && State.mode==="paused"){
+      // allow message timer a bit
+      State.msgT = Math.max(0, State.msgT - dt*0.2);
+      State.time += dt;
+    } else {
+      State.time += dt;
+    }
+
+    render();
+    clearPressed();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // Boot: preload level? We'll start only when playing; but render menu fine
+  // Setup: if touch, avoid scrolling on canvas
+  canvas.addEventListener("pointerdown", () => {
+    // resume audio context on first interaction
+    audio.beep(0,0,"square",0);
+  });
+
+  // If user presses Enter on menu, play
+  window.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" && State.mode==="menu"){
+      btnPlay.click();
+    }
+  });
+
+  // Start with a blank level for nicer background if save exists
+  const s0 = loadGame();
+  if(s0){
+    startLevel(s0.levelIndex ?? 0, s0);
+    State.mode = "menu";
+    setMode("menu");
+    // restore menu subtitle to default
+    document.getElementById("menuCard").querySelector(".subtitle").textContent =
+      "Lili, a cachorra caramelo mais esperta do bairro, está fugindo da prisão pra voltar pra casa. Pegue a chave, fuja do portão e não deixe os guardas aumentarem o alerta — porque quando o alarme toca, a bagunça começa.";
+  }else{
+    startLevel(0, null);
+    State.mode = "menu";
+    setMode("menu");
+  }
+
+  // Interact hint
+  setTimeout(() => {
+    showHint("Dica: Chegue perto de portas e aperte E", 1800);
+  }, 800);
+
+  // Prevent accidental page scroll on mobile
+  document.addEventListener("touchmove", (e)=> {
+    if(e.target === canvas) e.preventDefault();
+  }, { passive:false });
+
+})();
+</script>
+</body>
+</html>
